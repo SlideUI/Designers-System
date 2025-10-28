@@ -3,92 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SlideUI Blocks</title>
+  <title>SlideUI Block Gallery</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      background-color: #f9f9fb;
-      color: #002751;
-      font-family: 'Inter', sans-serif;
+    .glass {
+      backdrop-filter: blur(12px);
+      background: rgba(15,15,15,0.7);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-
-    header {
-      background-color: white;
-      border-bottom: 1px solid #e5e7eb;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .logo {
-      font-weight: 700;
-      font-size: 1.5rem;
-      color: #002751;
-    }
-
-    select {
-      border: 1px solid #e5e7eb;
-      border-radius: 53px;
-      padding: 10px 16px;
-      font-weight: 500;
-      background-color: white;
-      color: #002751;
-      transition: all 0.3s ease;
-    }
-
-    select:hover {
-      border-color: #002751;
-      background-color: #f0f7ff;
-    }
-
-    .block-card {
-      background-color: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .block-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .spinner {
       width: 24px;
       height: 24px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #268fff;
+      border: 3px solid #333;
+      border-top-color: #06b6d4;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center">
+<body class="bg-gray-950 text-white min-h-screen flex flex-col items-center">
 
   <!-- Header -->
-  <header class="w-full flex justify-center py-4 sticky top-0 z-10">
-    <div class="max-w-6xl w-full flex flex-wrap justify-between items-center px-6">
-      <div class="logo">SlideUI</div>
-      <div class="flex gap-3">
-        <select id="category"></select>
-        <select id="device">
-          <option>Desktop</option>
-          <option>Mobile</option>
-        </select>
-        <select id="mode">
-          <option>Dark Mode</option>
-          <option>Light Mode</option>
-          <option>Accent Mode</option>
-        </select>
-      </div>
-    </div>
+  <header class="glass w-full max-w-4xl mx-auto mt-6 p-5 rounded-2xl flex flex-wrap gap-3 justify-center items-center sticky top-4 z-10 shadow-xl">
+    <h1 class="text-2xl font-bold">SlideUI Blocks</h1>
+    <select id="category" class="px-4 py-2 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-cyan-500"></select>
+    <select id="device" class="px-4 py-2 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-cyan-500">
+      <option>Desktop</option>
+      <option>Mobile</option>
+    </select>
+    <select id="mode" class="px-4 py-2 bg-gray-800 text-white rounded-lg focus:ring-2 focus:ring-cyan-500">
+      <option>Dark Mode</option>
+      <option>Light Mode</option>
+      <option>Accent Mode</option>
+    </select>
   </header>
 
   <!-- Gallery -->
-  <main class="w-full max-w-6xl mt-10 px-4 pb-20">
+  <main class="w-full max-w-4xl mt-8 px-4 pb-20">
     <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     <div id="loading" class="flex items-center justify-center py-12 text-gray-400">
       <div class="spinner mr-3"></div>
@@ -96,73 +48,51 @@
     </div>
   </main>
 
-  <!-- ✅ Script runs AFTER DOM is parsed -->
-  <script defer>
-    window.addEventListener("DOMContentLoaded", () => {
-      console.log("✅ DOM loaded and script running");
+  <script>
+    // ✅ Simple, super-fast image loader (no manifest, no lag)
+    const BASE = `${location.origin}`; // your Vercel site base
+    const categories = ["404"]; // add more later
+    const catSel = document.getElementById("category");
+    const devSel = document.getElementById("device");
+    const modeSel = document.getElementById("mode");
+    const gallery = document.getElementById("gallery");
+    const loading = document.getElementById("loading");
 
-      const BASE = `${location.origin}${location.pathname.endsWith('/') ? location.pathname : location.pathname + '/'}`;
-      console.log("Base path:", BASE);
+    categories.forEach(c => catSel.add(new Option(c, c)));
 
-      const categories = [
-        "404","Online Booking","About Us","Password","Announcement Bar","Payment",
-        "Benefits : Statistics","Popup","Blog Articles","Pricing Plan","Blog Category",
-        "Privacy Policy","CTA : Banner","Product Highlight Bar","Calendar","Product Page",
-        "Case Studies","Product Specs","Comparison Chart","Profile","Contact Us",
-        "Registration : Progress Steps","Courses","Reviews","Dashboard","Services","FAQ",
-        "Sign In","Features","Sign Up","Footer","Simple Text","Form : Survey : Quiz",
-        "Social Media","Forums : Discussion","Tables","Gallery","Team","Hero",
-        "Testimonials","How It Works","Trusted Badges","Integrations","Upload : Download","Menu-Nav"
-      ];
+    function loadImages() {
+      const cat = catSel.value;
+      const dev = devSel.value;
+      const mode = modeSel.value;
 
-      const catSel = document.getElementById("category");
-      const devSel = document.getElementById("device");
-      const modeSel = document.getElementById("mode");
-      const gallery = document.getElementById("gallery");
-      const loading = document.getElementById("loading");
+      gallery.innerHTML = "";
+      loading.style.display = "flex";
 
-      if (!catSel) {
-        document.body.innerHTML += "<p style='color:red'>❌ Category element not found</p>";
-        console.error("Category select element missing — check your HTML structure!");
-        return;
+      const fragment = document.createDocumentFragment();
+
+      // Load all potential images in parallel
+      for (let i = 1; i <= 80; i++) {
+        const img = new Image();
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.src = `${BASE}/${cat}/${dev}/${mode}/${cat} Error Blocks-${i}_result_result.webp`;
+        img.alt = `${cat} block`;
+        img.onerror = () => img.remove(); // remove missing ones instantly
+        img.className =
+          "w-full rounded-xl shadow-lg transition-transform hover:scale-105";
+        fragment.appendChild(img);
       }
 
-      categories.forEach(c => catSel.add(new Option(c, c)));
+      gallery.appendChild(fragment);
+      loading.style.display = "none";
+    }
 
-      function normaliseName(cat) {
-        return cat === "404" ? "404 Error Blocks" : `${cat} Blocks`;
-      }
+    catSel.onchange = loadImages;
+    devSel.onchange = loadImages;
+    modeSel.onchange = loadImages;
 
-      function loadImages() {
-        const cat = catSel.value;
-        const dev = devSel.value;
-        const mode = modeSel.value;
-        const prefix = normaliseName(cat);
-
-        gallery.innerHTML = "";
-        loading.style.display = "flex";
-
-        for (let i = 1; i <= 3; i++) {
-          const img = new Image();
-          img.loading = "lazy";
-          img.src = `${BASE}${cat}/${dev}/${mode}/${prefix}-${i}_result.webp`;
-          console.log("Trying:", img.src);
-          img.onerror = () => console.warn("Image not found:", img.src);
-          img.alt = `${cat} block`;
-          img.className = "block-card w-full rounded-xl shadow hover:scale-[1.02]";
-          gallery.appendChild(img);
-        }
-
-        loading.style.display = "none";
-      }
-
-      catSel.onchange = loadImages;
-      devSel.onchange = loadImages;
-      modeSel.onchange = loadImages;
-
-      catSel.value = "404";
-      loadImages();
-    });
+    catSel.value = "404";
+    loadImages();
   </script>
 </body>
 </html>
