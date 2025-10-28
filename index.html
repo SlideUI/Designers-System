@@ -1,80 +1,152 @@
-<script>
-  const BASE = `${location.origin}`;
-  const categories = [
-    "404","Online Booking","About Us","Password","Announcement Bar","Payment",
-    "Benefits : Statistics","Popup","Blog Articles","Pricing Plan","Blog Category",
-    "Privacy Policy","CTA : Banner","Product Highlight Bar","Calendar","Product Page",
-    "Case Studies","Product Specs","Comparison Chart","Profile","Contact Us",
-    "Registration : Progress Steps","Courses","Reviews","Dashboard","Services","FAQ",
-    "Sign In","Features","Sign Up","Footer","Simple Text","Form : Survey : Quiz",
-    "Social Media","Forums : Discussion","Tables","Gallery","Team","Hero",
-    "Testimonials","How It Works","Trusted Badges","Integrations","Upload : Download","Menu-Nav"
-  ];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlideUI Blocks</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #f9f9fb;
+      color: #002751;
+      font-family: 'Inter', sans-serif;
+    }
 
-  const catSel = document.getElementById("category");
-  const devSel = document.getElementById("device");
-  const modeSel = document.getElementById("mode");
-  const gallery = document.getElementById("gallery");
-  const loading = document.getElementById("loading");
+    header {
+      background-color: white;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
 
-  categories.forEach(c => catSel.add(new Option(c, c)));
+    .logo {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #002751;
+    }
 
-  function getFilePatterns(cat) {
-    const safeCat = cat.replace(/ /g, '%20');
-    const patterns = [
-      `${safeCat}%20Blocks-`,          // normal case
-      `${safeCat}%20Error%20Blocks-`,  // 404 or others with "Error"
-      `${safeCat}-`                    // fallback
+    select {
+      border: 1px solid #e5e7eb;
+      border-radius: 53px;
+      padding: 10px 16px;
+      font-weight: 500;
+      background-color: white;
+      color: #002751;
+      transition: all 0.3s ease;
+    }
+
+    select:hover {
+      border-color: #002751;
+      background-color: #f0f7ff;
+    }
+
+    .block-card {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .block-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #268fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+  <!-- Header -->
+  <header class="w-full flex justify-center py-4 sticky top-0 z-10">
+    <div class="max-w-6xl w-full flex flex-wrap justify-between items-center px-6">
+      <div class="logo">SlideUI</div>
+      <div class="flex gap-3">
+        <select id="category"></select>
+        <select id="device">
+          <option>Desktop</option>
+          <option>Mobile</option>
+        </select>
+        <select id="mode">
+          <option>Dark_Mode</option>
+          <option>Light_Mode</option>
+          <option>Accent_Mode</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Gallery -->
+  <main class="w-full max-w-6xl mt-10 px-4 pb-20">
+    <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <div id="loading" class="flex items-center justify-center py-12 text-gray-400">
+      <div class="spinner mr-3"></div>
+      <span>Loading blocks…</span>
+    </div>
+  </main>
+
+  <script>
+    const BASE = `${location.origin}`;
+    const categories = [
+      "404","About_Us","Announcement_Bar","Benefits___Statistics","Blog_Articles",
+      "Blog_Category","CTA___Banner","Calendar","Case_Studies","Comparison_Chart",
+      "Contact_Us","Courses","Dashboard","FAQ","Features","Footer",
+      "Form___Survey___Quiz","Forums___Discussion","Gallery","Hero","Integrations",
+      "Menu-Nav","Online_Booking","Password","Payment","Popup","Pricing_Plan",
+      "Privacy_Policy","Product_Highlight_Bar","Product_Page","Product_Specs",
+      "Profile","Registration___Progress_Steps","Reviews","Services","Sign_In",
+      "Sign_Up","Simple_Text","Social_Media","Tables","Team","Testimonials",
+      "How_It_Works","Trusted_Badges","Upload___Download"
     ];
-    return patterns;
-  }
 
-  async function checkImageExists(url) {
-    const res = await fetch(url, { method: 'HEAD' });
-    return res.ok;
-  }
+    const catSel = document.getElementById("category");
+    const devSel = document.getElementById("device");
+    const modeSel = document.getElementById("mode");
+    const gallery = document.getElementById("gallery");
+    const loading = document.getElementById("loading");
 
-  async function loadImages() {
-    const cat = catSel.value;
-    const dev = devSel.value;
-    const mode = modeSel.value;
-    const patterns = getFilePatterns(cat);
+    categories.forEach(c => catSel.add(new Option(c.replaceAll("_", " "), c)));
 
-    gallery.innerHTML = "";
-    loading.style.display = "flex";
+    function loadImages() {
+      const cat = catSel.value;
+      const dev = devSel.value;
+      const mode = modeSel.value;
+      gallery.innerHTML = "";
+      loading.style.display = "flex";
 
-    const fragment = document.createDocumentFragment();
-
-    for (let i = 1; i <= 120; i++) {
-      let imgUrl = null;
-
-      for (const pattern of patterns) {
-        const candidate = `${BASE}/${cat}/${dev}/${mode}/${pattern}${i}_result.webp`;
-        if (await checkImageExists(candidate)) {
-          imgUrl = candidate;
-          break;
-        }
-      }
-
-      if (imgUrl) {
+      const fragment = document.createDocumentFragment();
+      for (let i = 1; i <= 120; i++) {
         const img = new Image();
-        img.src = imgUrl;
         img.loading = "lazy";
         img.decoding = "async";
-        img.alt = `${cat} block ${i}`;
+        img.src = `${BASE}/public/${cat}/${dev}/${mode}/${cat}_Blocks-${i}_result.webp`;
+        img.onerror = () => img.remove();
+        img.alt = `${cat} block`;
         img.className = "block-card w-full rounded-xl shadow hover:scale-[1.02]";
         fragment.appendChild(img);
       }
+
+      gallery.appendChild(fragment);
+      loading.style.display = "none";
     }
 
-    gallery.appendChild(fragment);
-    loading.style.display = "none";
-  }
+    catSel.onchange = loadImages;
+    devSel.onchange = loadImages;
+    modeSel.onchange = loadImages;
 
-  catSel.onchange = loadImages;
-  devSel.onchange = loadImages;
-  modeSel.onchange = loadImages;
-
-  catSel.value = "404";
-  loadImages();
-</script>
+    catSel.value = "404";
+    loadImages();
+  </script>
+</body>
+</html>
