@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gallery Test</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -12,8 +12,8 @@
   <div id="loading" class="flex items-center justify-center text-gray-600">Loading...</div>
   <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4 w-full max-w-6xl"></div>
 
+  <!-- ✅ Script placed at bottom so DOM exists before JS runs -->
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM loaded and script running");
 
     const BASE = "https://slideui.github.io/Designers-System/";
@@ -50,7 +50,6 @@
     }
 
     loadImages();
-  });
   </script>
 </body>
 </html>
