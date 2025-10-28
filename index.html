@@ -1,44 +1,56 @@
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM loaded and script running");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center bg-gray-100">
+  <h1 class="text-3xl font-bold mt-8 mb-4">About Us Blocks</h1>
 
-  const BASE = "https://slideui.github.io/Designers-System/";
-  console.log("Base path:", BASE);
+  <div id="loading" class="flex items-center justify-center text-gray-600">Loading...</div>
+  <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4 w-full max-w-6xl"></div>
 
-  const gallery = document.getElementById("gallery");
-  const loading = document.getElementById("loading");
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM loaded and script running");
 
-  const category = "About_Us";
-  const device = "Desktop";
-  const mode = "Accent Mode";
+    const BASE = "https://slideui.github.io/Designers-System/";
+    const gallery = document.getElementById("gallery");
+    const loading = document.getElementById("loading");
 
-  // Helper function to create and append images
-  function loadImages() {
-    gallery.innerHTML = "";
-    loading.style.display = "flex";
+    const category = "About_Us";
+    const device = "Desktop";
+    const mode = "Accent Mode";
 
-    const fragment = document.createDocumentFragment();
+    function loadImages() {
+      gallery.innerHTML = "";
+      loading.style.display = "flex";
 
-    for (let i = 1; i <= 120; i++) {
-      const file = `${BASE}${category}/${device}/${mode}/About Us Blocks-${i}_result.webp`;
-      const img = new Image();
-      img.src = file;
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.alt = `About Us Block ${i}`;
-      img.className =
-        "w-full rounded-xl shadow-lg transition-transform hover:scale-105";
+      const fragment = document.createDocumentFragment();
 
-      img.onload = () => console.log("✅ Loaded:", file);
-      img.onerror = () => console.warn("❌ Missing:", file);
+      for (let i = 1; i <= 120; i++) {
+        const file = `${BASE}${category}/${device}/${mode}/About Us Blocks-${i}_result.webp`;
+        const img = new Image();
+        img.src = file;
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.alt = `About Us Block ${i}`;
+        img.className = "rounded-lg shadow-lg hover:scale-105 transition-transform";
 
-      fragment.appendChild(img);
+        img.onload = () => console.log("✅ Loaded:", file);
+        img.onerror = () => console.warn("❌ Missing:", file);
+
+        fragment.appendChild(img);
+      }
+
+      gallery.appendChild(fragment);
+      loading.style.display = "none";
     }
 
-    gallery.appendChild(fragment);
-    loading.style.display = "none";
-  }
-
-  loadImages();
-});
-</script>
+    loadImages();
+  });
+  </script>
+</body>
+</html>
