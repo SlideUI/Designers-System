@@ -1,69 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Direct Image Test</title>
-  <style>
-    body {
-      background-color: #0f172a;
-      color: white;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 2rem;
-      padding: 2rem;
-    }
-    img {
-      max-width: 90vw;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.8);
-      border: 1px solid rgba(255,255,255,0.08);
-      background: #1e293b;
-      padding: 16px;
-    }
-    code {
-      background: #1e293b;
-      color: #93c5fd;
-      font-size: 12px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      max-width: 90vw;
-      word-break: break-all;
-      line-height: 1.4;
-    }
-    .note {
-      font-size: 14px;
-      color: #94a3b8;
-      text-align: center;
-      max-width: 420px;
-      line-height: 1.5;
-    }
-  </style>
-</head>
-<body>
+<script>
+  // Works both on GitHub Pages and Vercel
+  const BASE = window.location.origin + window.location.pathname.replace(/index\.html$/, '');
+  console.log("Base path:", BASE);
 
-  <div>
-    <div style="font-size:20px;font-weight:600;margin-bottom:8px;text-align:center;">
-      GitHub Pages Direct Image Check
-    </div>
-    <div class="note">
-      If you can see the block screenshot below, serving assets works. If it's broken, the path is wrong or GitHub Pages didn't publish that folder.
-    </div>
-  </div>
+  const categories = ["404"];
+  const catSel = document.getElementById("category");
+  const devSel = document.getElementById("device");
+  const modeSel = document.getElementById("mode");
+  const gallery = document.getElementById("gallery");
+  const loading = document.getElementById("loading");
 
-  <img
-    src="https://slideui.github.io/Designers-System/404/Desktop/Accent_Mode/404_Error_Blocks-10_result_result.webp"
-    alt="Test block"
-  />
+  // Populate dropdown
+  categories.forEach(c => catSel.add(new Option(c, c)));
 
-  <code>
-    https://slideui.github.io/Designers-System/404/Desktop/Accent_Mode/404_Error_Blocks-10_result_result.webp
-  </code>
+  function loadImages() {
+    const cat = catSel.value;
+    const dev = devSel.value;
+    const mode = modeSel.value; // Accent_Mode, Dark_Mode, etc.
 
-</body>
-</html>
+    gallery.innerHTML = "";
+    loading.style.display = "flex";
+
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 1; i <= 80; i++) {
+      const img = new Image();
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.src = `${BASE}${cat}/${dev}/${mode}/${cat}_Error_Blocks-${i}_result_result.webp`;
+      img.alt = `${cat} block`;
+      img.onerror = () => img.remove();
+      img.className = "w-full rounded-xl shadow-lg transition-transform hover:scale-105";
+      fragment.appendChild(img);
+    }
+
+    gallery.appendChild(fragment);
+    loading.style.display = "none";
+  }
+
+  catSel.onchange = loadImages;
+  devSel.onchange = loadImages;
+  modeSel.onchange = loadImages;
+
+  // Default
+  catSel.value = "404";
+  devSel.value = "Desktop";
+  modeSel.value = "Accent_Mode";
+  loadImages();
+</script>
