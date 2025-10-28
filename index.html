@@ -3,43 +3,166 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SlideUI Debug</title>
+  <title>SlideUI Blocks</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #f9f9fb;
+      color: #002751;
+      font-family: 'Inter', sans-serif;
+    }
+
+    header {
+      background-color: white;
+      border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #002751;
+    }
+
+    select {
+      border: 1px solid #e5e7eb;
+      border-radius: 53px;
+      padding: 10px 16px;
+      font-weight: 500;
+      background-color: white;
+      color: #002751;
+      transition: all 0.3s ease;
+    }
+
+    select:hover {
+      border-color: #002751;
+      background-color: #f0f7ff;
+    }
+
+    .block-card {
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .block-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #268fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col items-center justify-center">
-  <h1 class="text-3xl font-bold mb-4">🧠 SlideUI Debug Page</h1>
-  <div id="status" class="text-sm text-blue-600 mb-4">Loading script...</div>
-  <div id="gallery" class="grid grid-cols-1 gap-6"></div>
+<body class="min-h-screen flex flex-col items-center">
 
-  <script>
-  // Defensive error catcher
-  window.onerror = (msg, src, line, col, err) => {
-    document.getElementById('status').textContent =
-      "❌ JS error: " + msg + " (line " + line + ")";
-    console.error("Caught error:", msg, src, line, col, err);
-  };
+  <!-- Header -->
+  <header class="w-full flex justify-center py-4 sticky top-0 z-10">
+    <div class="max-w-6xl w-full flex flex-wrap justify-between items-center px-6">
+      <div class="logo">SlideUI</div>
+      <div class="flex gap-3">
+        <select id="category"></select>
+        <select id="device">
+          <option>Desktop</option>
+          <option>Mobile</option>
+        </select>
+        <select id="mode">
+          <option>Dark Mode</option>
+          <option>Light Mode</option>
+          <option>Accent Mode</option>
+        </select>
+      </div>
+    </div>
+  </header>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const status = document.getElementById('status');
-    status.textContent = "✅ DOM loaded";
+  <!-- Gallery -->
+  <main class="w-full max-w-6xl mt-10 px-4 pb-20">
+    <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <div id="loading" class="flex items-center justify-center py-12 text-gray-400">
+      <div class="spinner mr-3"></div>
+      <span>Loading blocks…</span>
+    </div>
+  </main>
 
-    // Compute base path for GitHub Pages
-    const BASE = `${location.origin}${location.pathname.endsWith('/') ? location.pathname : location.pathname + '/'}`;
-    status.insertAdjacentHTML('beforeend', `<br>Base path: ${BASE}`);
+  <!-- ✅ Script runs AFTER DOM is parsed -->
+  <script defer>
+    window.addEventListener("DOMContentLoaded", () => {
+      console.log("✅ DOM loaded and script running");
 
-    // Create one test image
-    const img = new Image();
-    img.src = `${BASE}404/Desktop/Dark Mode/404 Error Blocks-1_result.webp`;
-    img.alt = "Test image";
-    img.className = "border rounded shadow w-80 h-auto mt-4";
-    img.onerror = () => {
-      img.src = "https://via.placeholder.com/400x250?text=Image+Not+Found";
-      status.insertAdjacentHTML('beforeend', "<br>⚠️ Image not found, showing placeholder");
-    };
-    img.onload = () => status.insertAdjacentHTML('beforeend', "<br>✅ Image loaded");
+      const BASE = `${location.origin}${location.pathname.endsWith('/') ? location.pathname : location.pathname + '/'}`;
+      console.log("Base path:", BASE);
 
-    document.getElementById('gallery').appendChild(img);
-  });
+      const categories = [
+        "404","Online Booking","About Us","Password","Announcement Bar","Payment",
+        "Benefits : Statistics","Popup","Blog Articles","Pricing Plan","Blog Category",
+        "Privacy Policy","CTA : Banner","Product Highlight Bar","Calendar","Product Page",
+        "Case Studies","Product Specs","Comparison Chart","Profile","Contact Us",
+        "Registration : Progress Steps","Courses","Reviews","Dashboard","Services","FAQ",
+        "Sign In","Features","Sign Up","Footer","Simple Text","Form : Survey : Quiz",
+        "Social Media","Forums : Discussion","Tables","Gallery","Team","Hero",
+        "Testimonials","How It Works","Trusted Badges","Integrations","Upload : Download","Menu-Nav"
+      ];
+
+      const catSel = document.getElementById("category");
+      const devSel = document.getElementById("device");
+      const modeSel = document.getElementById("mode");
+      const gallery = document.getElementById("gallery");
+      const loading = document.getElementById("loading");
+
+      if (!catSel) {
+        document.body.innerHTML += "<p style='color:red'>❌ Category element not found</p>";
+        console.error("Category select element missing — check your HTML structure!");
+        return;
+      }
+
+      categories.forEach(c => catSel.add(new Option(c, c)));
+
+      function normaliseName(cat) {
+        return cat === "404" ? "404 Error Blocks" : `${cat} Blocks`;
+      }
+
+      function loadImages() {
+        const cat = catSel.value;
+        const dev = devSel.value;
+        const mode = modeSel.value;
+        const prefix = normaliseName(cat);
+
+        gallery.innerHTML = "";
+        loading.style.display = "flex";
+
+        for (let i = 1; i <= 3; i++) {
+          const img = new Image();
+          img.loading = "lazy";
+          img.src = `${BASE}${cat}/${dev}/${mode}/${prefix}-${i}_result.webp`;
+          console.log("Trying:", img.src);
+          img.onerror = () => console.warn("Image not found:", img.src);
+          img.alt = `${cat} block`;
+          img.className = "block-card w-full rounded-xl shadow hover:scale-[1.02]";
+          gallery.appendChild(img);
+        }
+
+        loading.style.display = "none";
+      }
+
+      catSel.onchange = loadImages;
+      devSel.onchange = loadImages;
+      modeSel.onchange = loadImages;
+
+      catSel.value = "404";
+      loadImages();
+    });
   </script>
 </body>
 </html>
