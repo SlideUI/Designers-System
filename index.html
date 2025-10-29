@@ -3,53 +3,200 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gallery Test</title>
+  <title>Designers System Gallery</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #f7f8fa;
+      color: #111;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid rgba(0,0,0,0.1);
+      border-top-color: rgb(6 182 212);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col items-center bg-gray-100">
-  <h1 class="text-3xl font-bold mt-8 mb-4">About Us Blocks</h1>
 
-  <div id="loading" class="flex items-center justify-center text-gray-600">Loading...</div>
-  <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4 w-full max-w-6xl"></div>
+<body class="min-h-screen flex flex-col items-center">
+  <!-- Page title -->
+  <h1 class="text-3xl font-bold mt-8 mb-6">Designers System Gallery</h1>
 
-  <!-- ✅ Script placed at bottom so DOM exists before JS runs -->
+  <!-- Controls -->
+  <div class="flex flex-wrap gap-3 mb-6">
+    <select id="category" class="px-4 py-2 border rounded-lg bg-white shadow-sm">
+      <option>About_Us</option>
+      <option>Case_Studies</option>
+      <option>Announcement_Bar</option>
+      <option>Blog_Articles</option>
+      <option>Product_Page</option>
+      <option>Hero</option>
+      <option>FAQ</option>
+      <option>Footer</option>
+      <option>Popup</option>
+      <option>404</option>
+    </select>
+
+    <select id="device" class="px-4 py-2 border rounded-lg bg-white shadow-sm">
+      <option>Desktop</option>
+      <option>Mobile</option>
+    </select>
+
+    <select id="mode" class="px-4 py-2 border rounded-lg bg-white shadow-sm">
+      <option>Accent Mode</option>
+      <option>Dark Mode</option>
+      <option>Light Mode</option>
+    </select>
+  </div>
+
+  <!-- Loader -->
+  <div id="loading" class="flex items-center justify-center text-gray-600 mb-4">
+    <div class="spinner mr-2"></div>
+    <span>Loading…</span>
+  </div>
+
+  <!-- Gallery -->
+  <div
+    id="gallery"
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-4 w-full max-w-6xl"
+  ></div>
+
   <script>
-    console.log("DOM loaded and script running");
+    console.log("🟢 Stable Gallery Script Running");
 
     const BASE = "https://slideui.github.io/Designers-System/";
-    const gallery = document.getElementById("gallery");
-    const loading = document.getElementById("loading");
+    const gallery   = document.getElementById("gallery");
+    const loading   = document.getElementById("loading");
+    const categorySelect = document.getElementById("category");
+    const deviceSelect   = document.getElementById("device");
+    const modeSelect     = document.getElementById("mode");
 
-    const category = "About_Us";
-    const device = "Desktop";
-    const mode = "Accent Mode";
+    // convert "Accent Mode" -> "Accent_Mode" etc
+    function normaliseMode(mode) {
+      return mode
+        .replace(/Accent ?Mode/i, "Accent_Mode")
+        .replace(/Dark ?Mode/i,   "Dark_Mode")
+        .replace(/Light ?Mode/i,  "Light_Mode");
+    }
+
+    // For a single index (1..120), generate all possible URLs where that image might live
+    function getCandidatePaths(category, device, mode, index) {
+      // turn About_Us -> "About Us"
+      const humanName = category.replace(/_/g, " ");
+      const fixedMode = normaliseMode(mode);
+
+      // NOTE:
+      // - some folders use "Accent Mode"
+      // - some use "Accent_Mode"
+      // - some are inside /public
+      // - some use nested "<Category>_<Device>_<Accent_Mode>"
+      // - some file names follow "<Human Category> Blocks-1_result.webp"
+      // - some file names follow "<Category>_<Device>_<Accent_Mode>-1_result.webp"
+      return [
+        // direct, space mode
+        `${BASE}${category}/${device}/${mode}/${humanName} Blocks-${index}_result.webp`,
+
+        // direct, underscore mode
+        `${BASE}${category}/${device}/${fixedMode}/${humanName} Blocks-${index}_result.webp`,
+
+        // public prefix, space mode
+        `${BASE}public/${category}/${device}/${mode}/${humanName} Blocks-${index}_result.webp`,
+
+        // public prefix, underscore mode
+        `${BASE}public/${category}/${device}/${fixedMode}/${humanName} Blocks-${index}_result.webp`,
+
+        // nested "<Category>_<Device>_<FixedMode>" directory but human-name file
+        `${BASE}public/${category}/${device}/${category}_${device}_${fixedMode}/${humanName} Blocks-${index}_result.webp`,
+
+        // nested "<Category>_<Device>_<FixedMode>" directory AND same prefix in filename
+        `${BASE}public/${category}/${device}/${category}_${device}_${fixedMode}/${category}_${device}_${fixedMode}-${index}_result.webp`,
+
+        // some folders drop the space in mode folder name: "AccentMode"
+        `${BASE}${category}/${device}/${mode.replace(/ /g,"")}/${humanName} Blocks-${index}_result.webp`,
+        `${BASE}public/${category}/${device}/${mode.replace(/ /g,"")}/${humanName} Blocks-${index}_result.webp`
+      ];
+    }
 
     function loadImages() {
+      const category = categorySelect.value;
+      const device   = deviceSelect.value;
+      const mode     = modeSelect.value;
+
+      console.log(`🟦 Loading: ${category}/${device}/${mode}`);
+
+      // clear and show loading
       gallery.innerHTML = "";
       loading.style.display = "flex";
 
+      // make a fragment so we don't thrash the DOM
       const fragment = document.createDocumentFragment();
+      let loadedCount = 0;
 
+      // for each possible block index, try to find a working URL
       for (let i = 1; i <= 120; i++) {
-        const file = `${BASE}${category}/${device}/${mode}/About Us Blocks-${i}_result.webp`;
         const img = new Image();
-        img.src = file;
         img.loading = "lazy";
         img.decoding = "async";
-        img.alt = `About Us Block ${i}`;
-        img.className = "rounded-lg shadow-lg hover:scale-105 transition-transform";
+        img.alt = `${category} Block ${i}`;
+        img.className =
+          "rounded-lg shadow-lg hover:scale-105 transition-transform duration-200 bg-white";
 
-        img.onload = () => console.log("✅ Loaded:", file);
-        img.onerror = () => console.warn("❌ Missing:", file);
+        const candidates = getCandidatePaths(category, device, mode, i);
+
+        let candidatePos = 0;
+        let success = false;
+
+        function tryNextCandidate() {
+          if (success) return; // already loaded fine
+          if (candidatePos >= candidates.length) {
+            // no valid URL -> remove element so we don't get broken box
+            img.remove();
+            return;
+          }
+
+          const url = candidates[candidatePos++];
+          img.src = url;
+        }
+
+        img.onload = () => {
+          if (!success) {
+            success = true;
+            loadedCount++;
+            console.log(`✅ Loaded (${loadedCount}):`, img.src);
+          }
+        };
+
+        img.onerror = () => {
+          // try the next possible path for this same index
+          tryNextCandidate();
+        };
+
+        // start first attempt
+        tryNextCandidate();
 
         fragment.appendChild(img);
       }
 
+      // attach all images
       gallery.appendChild(fragment);
+
+      // hide loader
       loading.style.display = "none";
+      console.log("🟩 Cycle complete for", category, device, mode);
     }
 
+    // initial load
     loadImages();
+
+    // re-load on change
+    categorySelect.addEventListener("change", loadImages);
+    deviceSelect.addEventListener("change", loadImages);
+    modeSelect.addEventListener("change", loadImages);
   </script>
 </body>
 </html>
